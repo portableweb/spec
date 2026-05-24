@@ -1,0 +1,32 @@
+{
+  "spec_version": "0.1",
+  "id": "org.portableweb.examples.hello",
+  "version": "1.0.0",
+  "title": "Hello, PortableWeb",
+  "description": "The first example bundle. Demonstrates the minimum valid PortableWeb format and proves that HTML, CSS, and JS work inside a sandboxed bundle.",
+  "author": {
+    "name": "PortableWeb Project",
+    "url": "https://portableweb.org"
+  },
+  "created": "2026-05-24T00:00:00Z",
+  "entry": "index.html",
+  "permissions": {
+    "network": false,
+    "camera": false,
+    "microphone": false,
+    "storage": "isolated",
+    "fullscreen": true
+  },
+  "rights": {
+    "copyright": "© 2026 PortableWeb Project",
+    "license": "CC0-1.0",
+    "license_url": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "viewport": {
+    "preferred_width": 960,
+    "preferred_height": 720,
+    "resizable": true,
+    "min_width": 480,
+    "min_height": 360
+  }
+}

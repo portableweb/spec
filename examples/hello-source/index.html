@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hello, PortableWeb</title>
+  <style>
+    :root {
+      --ink: #1a1714;
+      --paper: #f4ede0;
+      --paper-shadow: #e8dfcc;
+      --accent: #b8390e;
+      --rule: #1a1714;
+      --muted: #756b5e;
+      --serif: ui-serif, "Iowan Old Style", "Apple Garamond", Baskerville, "Times New Roman", "Droid Serif", Times, "Source Serif Pro", serif;
+      --mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --ink: #f0e6d2;
+        --paper: #1a1714;
+        --paper-shadow: #2a241c;
+        --accent: #e8835a;
+        --rule: #f0e6d2;
+        --muted: #8a8170;
+      }
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: var(--serif);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      background-image:
+        radial-gradient(at 20% 30%, rgba(0,0,0,0.025) 0%, transparent 50%),
+        radial-gradient(at 80% 70%, rgba(0,0,0,0.025) 0%, transparent 50%);
+      background-attachment: fixed;
+    }
+
+    .page {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: clamp(2rem, 8vh, 6rem) clamp(1.5rem, 5vw, 3rem);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .mark {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 3rem;
+      opacity: 0;
+      animation: rise 0.8s 0.1s forwards;
+    }
+
+    .mark-icon {
+      width: 18px;
+      height: 18px;
+      display: inline-block;
+    }
+
+    h1 {
+      font-family: var(--serif);
+      font-weight: 400;
+      font-style: italic;
+      font-size: clamp(2.5rem, 7vw, 4rem);
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      margin: 0 0 2rem 0;
+      opacity: 0;
+      animation: rise 0.9s 0.25s forwards;
+    }
+
+    h1 .ampersand {
+      font-style: italic;
+      color: var(--accent);
+    }
+
+    .lede {
+      font-size: 1.15rem;
+      line-height: 1.6;
+      max-width: 38em;
+      margin: 0 0 2.5rem 0;
+      opacity: 0;
+      animation: rise 0.9s 0.4s forwards;
+    }
+
+    .rule {
+      width: 60px;
+      height: 1px;
+      background: var(--rule);
+      margin: 0 0 2.5rem 0;
+      opacity: 0;
+      animation: stretch 0.9s 0.55s forwards;
+      transform-origin: left;
+    }
+
+    .proof {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 2.5rem;
+      opacity: 0;
+      animation: rise 0.9s 0.7s forwards;
+    }
+
+    .proof-cell {
+      border: 1px solid var(--rule);
+      padding: 1.25rem;
+      background: var(--paper-shadow);
+    }
+
+    .proof-label {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.5rem;
+    }
+
+    .proof-value {
+      font-family: var(--mono);
+      font-size: 1.4rem;
+      color: var(--ink);
+      font-feature-settings: "tnum";
+      font-variant-numeric: tabular-nums;
+    }
+
+    .proof-value.click {
+      cursor: pointer;
+      user-select: none;
+      transition: color 0.15s ease;
+    }
+
+    .proof-value.click:hover {
+      color: var(--accent);
+    }
+
+    .proof-value.click:active {
+      transform: scale(0.97);
+    }
+
+    .footer {
+      margin-top: auto;
+      padding-top: 3rem;
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+      opacity: 0;
+      animation: rise 0.9s 0.85s forwards;
+    }
+
+    .footer span { white-space: nowrap; }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes stretch {
+      from { opacity: 0; transform: scaleX(0); }
+      to { opacity: 1; transform: scaleX(1); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; opacity: 1 !important; transform: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+
+    <div class="mark">
+      <svg class="mark-icon" viewBox="0 0 18 18" aria-hidden="true">
+        <rect x="2"  y="11" width="14" height="3" fill="currentColor"/>
+        <rect x="3.5" y="7"  width="11"  height="3" fill="currentColor"/>
+        <rect x="5"  y="3"  width="8"   height="3" fill="currentColor"/>
+      </svg>
+      <span>PortableWeb &middot; v0.1 Bundle</span>
+    </div>
+
+    <h1>Hello<span class="ampersand">.</span></h1>
+
+    <p class="lede">
+      You are looking at the inside of a <code>.pweb</code> bundle.
+      Self-contained, sandboxed, and built to be readable for as long as
+      a compatible viewer exists. This page is the very first example.
+    </p>
+
+    <div class="rule"></div>
+
+    <section class="proof" aria-label="Proof the runtime works">
+      <div class="proof-cell">
+        <div class="proof-label">Clock (JavaScript)</div>
+        <div class="proof-value" id="clock">00:00:00</div>
+      </div>
+      <div class="proof-cell">
+        <div class="proof-label">Tap to count</div>
+        <div class="proof-value click" id="counter" role="button" tabindex="0" aria-label="Tap to increment">0</div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <span>portableweb.org</span>
+      <span>CC0 &middot; Public Domain</span>
+    </footer>
+
+  </main>
+
+  <script>
+    // Tiny proof that JS runs inside the sandbox.
+    (function () {
+      var clockEl = document.getElementById('clock');
+      var counterEl = document.getElementById('counter');
+      var count = 0;
+
+      function pad(n) { return n < 10 ? '0' + n : '' + n; }
+
+      function tick() {
+        var d = new Date();
+        clockEl.textContent =
+          pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
+      }
+
+      tick();
+      setInterval(tick, 1000);
+
+      function bump() {
+        count += 1;
+        counterEl.textContent = String(count);
+      }
+
+      counterEl.addEventListener('click', bump);
+      counterEl.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          bump();
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
