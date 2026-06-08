@@ -84,15 +84,9 @@ See `spec/README.md` for the full roadmap.
 - Build a bundle and open a PR adding it to `examples/`
 - File issues with feedback on the v0.1 draft
 
-## Trademark
+## Community
 
-PortableWeb™ is claimed as a trademark by the PortableWeb project creator.
-
-The .pweb file format is intended to be an open specification.
-
-Use of the name PortableWeb must not imply endorsement, certification, or official status unless authorized.
-
-Truthful statements such as "supports .pweb files" are permitted.
+This project is open for community contribution. All materials are contributed under the Creative Commons Attribution 4.0 license (CC-BY-4.0). This work is being submitted as input to the W3C Portable Web Content Format (PortableWeb) Community Group.
 
 ## License
 
