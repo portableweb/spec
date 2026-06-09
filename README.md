@@ -56,6 +56,7 @@ unzip -lv examples/hello.pweb
 
 - [Container format](spec/CONTAINER.md) — ZIP layout, required files, identification
 - [Manifest schema](spec/MANIFEST.md) — `manifest.json` fields and validation
+- [IETF Internet-Draft](ietf/draft-selvaraj-portableweb-format-00.md) — formal specification submission (`draft-selvaraj-portableweb-format-00`)
 
 ## Status & roadmap
 

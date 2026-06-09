@@ -5,6 +5,7 @@
 **Date:** 2026-05-24
 **Editor:** Omprakash Selvaraj
 **Canonical URL:** https://portableweb.org/spec/container/
+**IETF Internet-Draft:** [draft-selvaraj-portableweb-format-00](../ietf/draft-selvaraj-portableweb-format-00.md)
 
 ---
 
