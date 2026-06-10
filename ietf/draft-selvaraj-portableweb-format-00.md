@@ -37,7 +37,7 @@ normative:
       - ins: T. Bray
     date: 2017-12
   ISO21320:
-    title: "ISO/IEC 21320-1: Document Container File - Part 1: Core"
+    title: "ISO/IEC 21320-1: Document Container File — Part 1: Core"
     target: https://www.iso.org/standard/60101.html
     date: 2015
 
@@ -61,7 +61,7 @@ informative:
     title: SPDX License List
     target: https://spdx.org/licenses/
   ZIP:
-    title: APPNOTE.TXT - .ZIP File Format Specification
+    title: APPNOTE.TXT — .ZIP File Format Specification
     target: https://pkware.cachefly.net/webdocs/casestudies/APPNOTE.TXT
   WASM:
     title: WebAssembly Core Specification
@@ -75,9 +75,9 @@ informative:
 
 abstract
 
-This document defines the PortableWeb format, a file format for packaging
-interactive web content -- including HTML, CSS, JavaScript, and associated
-media -- into a single self-contained, portable bundle. A PortableWeb bundle
+This document defines the Portable Web Content Format (PortableWeb), a file format for packaging
+interactive web content — including HTML, CSS, JavaScript, and associated
+media — into a single self-contained, portable bundle. A PortableWeb bundle
 (`.pweb` file) can be saved, shared, and rendered by a compatible viewer
 application on any platform, entirely offline, without a web server, without
 association with a Web origin, and without being confined to a web browser.
@@ -108,7 +108,7 @@ unacceptable tradeoff:
   connectivity, and is unsuitable for ephemeral or single-use content.
 
 - Publishing to an application store requires developer accounts, review
-  cycles, and ongoing maintenance -- appropriate for long-lived commercial
+  cycles, and ongoing maintenance — appropriate for long-lived commercial
   software, but not for the large volumes of interactive artifacts being
   created today.
 
@@ -126,22 +126,22 @@ unacceptable tradeoff:
 
 - The Web Application Manifest describes how an already-deployed web
   application presents itself when installed on a device. It is
-  fundamentally tied to a Web origin -- the application lives on a server
+  fundamentally tied to a Web origin — the application lives on a server
   and the manifest is a descriptor for that server-hosted experience. It
   does not address content that has no server and no origin.
 
 - WebAssembly {{WASM}} is a runtime technology, not a distribution format.
-  It may be used as a resource within a PortableWeb bundle -- alongside
-  HTML, CSS, and JavaScript -- where high-performance code execution is
+  It may be used as a resource within a PortableWeb bundle — alongside
+  HTML, CSS, and JavaScript — where high-performance code execution is
   needed. However, WebAssembly defines no packaging structure, manifest,
   viewer model, or permission system for self-contained content
   distribution. The relationship is complementary: WebAssembly can run
   inside a PortableWeb bundle; it does not address the same problem.
 
-The PortableWeb format addresses this gap. A `.pweb` bundle is a single file
+The Portable Web Content Format addresses this gap. A `.pweb` bundle is a single file
 that contains all the HTML, CSS, JavaScript, and media required to render an
 interactive experience. It can be opened by a compatible viewer application
-on any platform -- desktop, mobile, or otherwise -- entirely offline, without
+on any platform — desktop, mobile, or otherwise — entirely offline, without
 deployment infrastructure, without a Web origin, and without being confined
 to a web browser. The content inside is built entirely on standard web
 technologies, keeping the format firmly within the web platform ecosystem.
@@ -154,7 +154,7 @@ constraints on the content model.
 
 ## Design Goals
 
-The PortableWeb format is designed to:
+The Portable Web Content Format is designed to:
 
 - Be openable by any compatible viewer on any platform, entirely offline.
 - Behave like a document: saveable, copyable, shareable, and archivable.
@@ -222,7 +222,7 @@ A PortableWeb bundle uses the following identifiers:
 
 - **File extension:** `.pweb`
 - **Media type:** `application/vnd.portableweb+zip`
-- **Magic bytes:** `50 4B 03 04` (PK\003\004) -- the standard ZIP local
+- **Magic bytes:** `50 4B 03 04` (PK\\003\\004) — the standard ZIP local
   file header signature.
 
 A viewer MUST accept files with the `.pweb` extension or the
@@ -619,7 +619,7 @@ updated.
 
 Additional information:
 
-: Magic number(s): `50 4B 03 04` (PK\003\004)
+: Magic number(s): `50 4B 03 04` (PK\\003\\004)
 
 : File extension(s): `.pweb`
 
@@ -654,3 +654,11 @@ broader web platform standards ecosystem for the runtime model. The author
 thanks the IANA media types reviewer and the W3C Portable Web Content Format
 Community Group participants for their feedback on early drafts of this
 specification.
+
+# Changes from -00
+
+{:numbered="false"}
+
+The following changes were made from draft-selvaraj-portableweb-format-00:
+
+- Updated formal name throughout to Portable Web Content Format (PortableWeb).
