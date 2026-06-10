@@ -4,7 +4,7 @@
 **Status:** Pre-release. Breaking changes may occur until v1.0.
 **Date:** 2026-05-24
 **Editor:** Omprakash Selvaraj
-**Canonical URL:** https://portableweb.org/spec/container/
+**Canonical URL:** [https://portableweb.org/spec/container/](https://zenodo.org/records/20618881)
 **IETF Internet-Draft:** [draft-selvaraj-portableweb-format-01](https://www.ietf.org/archive/id/draft-selvaraj-portableweb-format-01.html)
 
 ---
