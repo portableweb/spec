@@ -8,6 +8,7 @@ ipr: trust200902
 area: Applications and Real-Time
 workgroup: Independent Submission
 keyword:
+  - portable web content format
   - portableweb
   - pweb
   - portable
@@ -71,11 +72,11 @@ informative:
     title: Web Application Manifest
     target: https://www.w3.org/TR/appmanifest/
     date: 2023
----
 
-abstract
+--- abstract
 
-This document defines the Portable Web Content Format (PortableWeb), a file format for packaging
+This document defines the Portable Web Content Format (PortableWeb),
+a file format for packaging
 interactive web content — including HTML, CSS, JavaScript, and associated
 media — into a single self-contained, portable bundle. A PortableWeb bundle
 (`.pweb` file) can be saved, shared, and rendered by a compatible viewer
@@ -138,7 +139,8 @@ unacceptable tradeoff:
   distribution. The relationship is complementary: WebAssembly can run
   inside a PortableWeb bundle; it does not address the same problem.
 
-The Portable Web Content Format addresses this gap. A `.pweb` bundle is a single file
+The Portable Web Content Format (PortableWeb) addresses this gap.
+A `.pweb` bundle is a single file
 that contains all the HTML, CSS, JavaScript, and media required to render an
 interactive experience. It can be opened by a compatible viewer application
 on any platform — desktop, mobile, or otherwise — entirely offline, without
@@ -154,7 +156,7 @@ constraints on the content model.
 
 ## Design Goals
 
-The Portable Web Content Format is designed to:
+The PortableWeb format is designed to:
 
 - Be openable by any compatible viewer on any platform, entirely offline.
 - Behave like a document: saveable, copyable, shareable, and archivable.
@@ -198,6 +200,12 @@ capitals, as shown here.
 
 The following terms are used throughout this document:
 
+**Portable Web Content Format (PortableWeb):**
+: The file format defined by this specification for packaging
+  interactive web
+  content into a single self-contained, portable bundle. "PortableWeb" is
+  used as the short form throughout this document.
+
 **Bundle:**
 : A single `.pweb` file conforming to this specification.
 
@@ -212,7 +220,7 @@ The following terms are used throughout this document:
 
 **Package boundary:**
 : The set of files contained within a bundle. Resources outside this
-boundary are external resources.
+  boundary are external resources.
 
 # Container Format
 
@@ -281,7 +289,7 @@ paths.
 The following layout is RECOMMENDED but not required. Bundles MAY use any
 layout consistent with this section.
 
-```
+~~~
 example.pweb (zip)
 ├── mimetype                  (required, first, uncompressed)
 ├── manifest.json             (required, at root)
@@ -291,7 +299,7 @@ example.pweb (zip)
 ├── styles/                   (recommended: CSS files)
 ├── media/                    (recommended: audio and video)
 └── data/                     (recommended: JSON and static data)
-```
+~~~
 
 ## Reserved Paths
 
@@ -346,27 +354,27 @@ without a byte order mark. The top-level value MUST be a JSON object.
 
 The following fields MUST be present in every conforming manifest:
 
-| Field          | Type   | Description                                                                                                                                                                        |
-| -------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `spec_version` | string | The PortableWeb container spec version this bundle targets. Format: `"MAJOR.MINOR"`. For v0.1 bundles, the value MUST be `"0.1"`.                                                  |
-| `id`           | string | A globally unique identifier for this bundle in reverse-domain notation (e.g., `"org.example.my-bundle"`). MUST contain only lowercase alphanumeric characters, dots, and hyphens. |
-| `version`      | string | The bundle's own version, following Semantic Versioning 2.0 {{SEMVER}} (e.g., `"1.0.0"`).                                                                                          |
-| `title`        | string | A human-readable title for the bundle. MUST NOT exceed 200 characters.                                                                                                             |
-| `entry`        | string | The path within the bundle to the HTML entry file. MUST end in `.html` or `.htm`. MUST NOT begin with `/`.                                                                         |
+| Field | Type | Description |
+|---|---|---|
+| `spec_version` | string | The PortableWeb container spec version this bundle targets. Format: `"MAJOR.MINOR"`. For v0.1 bundles, the value MUST be `"0.1"`. |
+| `id` | string | A globally unique identifier for this bundle in reverse-domain notation (e.g., `"org.example.my-bundle"`). MUST contain only lowercase alphanumeric characters, dots, and hyphens. |
+| `version` | string | The bundle's own version, following Semantic Versioning 2.0 {{SEMVER}} (e.g., `"1.0.0"`). |
+| `title` | string | A human-readable title for the bundle. MUST NOT exceed 200 characters. |
+| `entry` | string | The path within the bundle to the HTML entry file. MUST end in `.html` or `.htm`. MUST NOT begin with `/`. |
 
 ## Recommended Fields
 
 The following fields are RECOMMENDED:
 
-| Field          | Type   | Description                                                                                                                                                                    |
-| -------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `description`  | string | A short description of the bundle. MUST NOT exceed 1000 characters.                                                                                                            |
-| `author`       | object | An object with `name` (required), `email` (optional), and `url` (optional).                                                                                                    |
-| `created`      | string | The creation date in ISO 8601 format (e.g., `"2026-05-24T00:00:00Z"`).                                                                                                         |
-| `icon`         | string | Path within the bundle to a square icon (SVG or PNG RECOMMENDED).                                                                                                              |
-| `permissions`  | object | Declared capabilities (see Section 4.5). If omitted, all permissions default to their specified default values.                                                                |
-| `rights`       | object | Copyright and license information (see Section 4.6).                                                                                                                           |
-| `viewport`     | object | Hints to the viewer for initial window sizing (see Section 4.7).                                                                                                               |
+| Field | Type | Description |
+|---|---|---|
+| `description` | string | A short description of the bundle. MUST NOT exceed 1000 characters. |
+| `author` | object | An object with `name` (required), `email` (optional), and `url` (optional). |
+| `created` | string | The creation date in ISO 8601 format (e.g., `"2026-05-24T00:00:00Z"`). |
+| `icon` | string | Path within the bundle to a square icon (SVG or PNG RECOMMENDED). |
+| `permissions` | object | Declared capabilities (see Section 4.5). If omitted, all permissions default to their specified default values. |
+| `rights` | object | Copyright and license information (see Section 4.6). |
+| `viewport` | object | Hints to the viewer for initial window sizing (see Section 4.7). |
 | `content_type` | string | A hint describing the nature of the content. RECOMMENDED values: `"game"`, `"presentation"`, `"book"`, `"simulation"`, `"tool"`, `"report"`, `"visualization"`, `"education"`. |
 
 ## Permissions
@@ -375,17 +383,17 @@ Permissions are declared upfront in the manifest and are not requested at
 runtime. Any permission not declared is denied by default. Viewers SHOULD
 present declared permissions to the user when a bundle is first opened.
 
-| Permission        | Type              | Default      | Description                                                                                                                            |
-| ----------------- | ----------------- | ------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
-| `network`         | boolean           | `false`      | Allow fetch and XMLHttpRequest to non-bundle URLs. Archival bundles SHOULD keep this `false`.                                          |
-| `camera`          | boolean or string | `false`      | Allow getUserMedia video access. A string value is shown to the user as a justification.                                               |
-| `microphone`      | boolean or string | `false`      | Allow getUserMedia audio access.                                                                                                       |
-| `geolocation`     | boolean or string | `false`      | Allow the Geolocation API.                                                                                                             |
-| `clipboard_write` | boolean           | `false`      | Allow programmatic writes to the system clipboard.                                                                                     |
-| `notifications`   | boolean           | `false`      | Allow OS-level notifications while the bundle is open.                                                                                 |
-| `fullscreen`      | boolean           | `true`       | Allow the Fullscreen API. Default is `true` due to low risk.                                                                           |
-| `storage`         | string            | `"isolated"` | Storage mode. Allowed values: `"none"` (no persistent storage), `"isolated"` (scoped localStorage and IndexedDB, isolated per bundle). |
-| `peers`           | boolean           | `false`      | Allow inter-bundle communication via local channels. Defined in the companion COMMS specification.                                     |
+| Permission | Type | Default | Description |
+|---|---|---|---|
+| `network` | boolean | `false` | Allow fetch and XMLHttpRequest to non-bundle URLs. Archival bundles SHOULD keep this `false`. |
+| `camera` | boolean or string | `false` | Allow getUserMedia video access. A string value is shown to the user as a justification. |
+| `microphone` | boolean or string | `false` | Allow getUserMedia audio access. |
+| `geolocation` | boolean or string | `false` | Allow the Geolocation API. |
+| `clipboard_write` | boolean | `false` | Allow programmatic writes to the system clipboard. |
+| `notifications` | boolean | `false` | Allow OS-level notifications while the bundle is open. |
+| `fullscreen` | boolean | `true` | Allow the Fullscreen API. Default is `true` due to low risk. |
+| `storage` | string | `"isolated"` | Storage mode. Allowed values: `"none"` (no persistent storage), `"isolated"` (scoped localStorage and IndexedDB, isolated per bundle). |
+| `peers` | boolean | `false` | Allow inter-bundle communication via local channels. Defined in the companion COMMS specification. |
 
 Future versions of this specification MAY define additional permission keys.
 Viewers MUST ignore unknown permission keys when the bundle targets a spec
@@ -393,29 +401,29 @@ version the viewer supports.
 
 ## The `rights` Object
 
-| Field         | Type   | Description                                                                                       |
-| ------------- | ------ | ------------------------------------------------------------------------------------------------- |
-| `copyright`   | string | Human-readable copyright notice (e.g., `"© 2026 Jane Doe"`).                                      |
-| `license`     | string | An SPDX license identifier {{SPDX}} (e.g., `"MIT"`, `"CC-BY-4.0"`, `"CC0-1.0"`, `"proprietary"`). |
-| `license_url` | string | URL to the full license text.                                                                     |
-| `contact`     | string | Contact information for licensing inquiries.                                                      |
+| Field | Type | Description |
+|---|---|---|
+| `copyright` | string | Human-readable copyright notice (e.g., `"© 2026 Jane Doe"`). |
+| `license` | string | An SPDX license identifier {{SPDX}} (e.g., `"MIT"`, `"CC-BY-4.0"`, `"CC0-1.0"`, `"proprietary"`). |
+| `license_url` | string | URL to the full license text. |
+| `contact` | string | Contact information for licensing inquiries. |
 
 ## The `viewport` Object
 
-| Field              | Type    | Description                                                     |
-| ------------------ | ------- | --------------------------------------------------------------- |
-| `preferred_width`  | integer | Suggested initial window width in CSS pixels.                   |
-| `preferred_height` | integer | Suggested initial window height in CSS pixels.                  |
-| `resizable`        | boolean | Whether the viewer window should be resizable. Default: `true`. |
-| `min_width`        | integer | Minimum window width in CSS pixels.                             |
-| `min_height`       | integer | Minimum window height in CSS pixels.                            |
+| Field | Type | Description |
+|---|---|---|
+| `preferred_width` | integer | Suggested initial window width in CSS pixels. |
+| `preferred_height` | integer | Suggested initial window height in CSS pixels. |
+| `resizable` | boolean | Whether the viewer window should be resizable. Default: `true`. |
+| `min_width` | integer | Minimum window width in CSS pixels. |
+| `min_height` | integer | Minimum window height in CSS pixels. |
 
 These are hints, not requirements. Viewers MAY override them based on the
 user's environment or platform conventions.
 
 ## Example: Minimal Valid Manifest
 
-```json
+~~~json
 {
   "spec_version": "0.1",
   "id": "org.example.minimal",
@@ -423,17 +431,17 @@ user's environment or platform conventions.
   "title": "Minimal Example",
   "entry": "index.html"
 }
-```
+~~~
 
 ## Example: Full Manifest
 
-```json
+~~~json
 {
   "spec_version": "0.1",
   "id": "org.example.solar-system",
   "version": "1.2.0",
   "title": "Interactive Solar System",
-  "description": "Explore planet orbits and relative scales of our solar system.",
+  "description": "Explore planet orbits and relative scales.",
   "content_type": "simulation",
   "author": {
     "name": "Jane Doe",
@@ -464,7 +472,7 @@ user's environment or platform conventions.
     "min_height": 600
   }
 }
-```
+~~~
 
 ## Validation
 
@@ -605,17 +613,17 @@ Published specification:
 
 Applications that use this media type:
 : PortableWeb viewer applications, authoring tools, packaging tools,
-validation tools, document-management systems, file managers, web servers,
-content-distribution systems, and AI content generation tools that create,
-distribute, inspect, validate, store, or render PortableWeb packages.
+  validation tools, document-management systems, file managers, web servers,
+  content-distribution systems, and AI content generation tools that create,
+  distribute, inspect, validate, store, or render PortableWeb packages.
 
 Fragment identifier considerations:
 : Fragment identifier semantics are not defined by this registration for the
-PortableWeb container as a whole. Fragment identifiers within packaged
-resources are interpreted according to the rules of the individual resource
-media type. If a future version of this specification defines
-PortableWeb-specific fragment identifier syntax, this registration will be
-updated.
+  PortableWeb container as a whole. Fragment identifiers within packaged
+  resources are interpreted according to the rules of the individual resource
+  media type. If a future version of this specification defines
+  PortableWeb-specific fragment identifier syntax, this registration will be
+  updated.
 
 Additional information:
 
@@ -644,8 +652,27 @@ Change controller:
 
 --- back
 
-# Acknowledgments
+# Changes from Version 00
+{:numbered="false"}
 
+The following changes were made in this revision:
+
+- The format's full name, "Portable Web Content Format
+  (PortableWeb)", is now
+  introduced explicitly on first use in the document title, abstract,
+  Introduction section, and Terminology section. Subsequent references
+  throughout the document continue to use "PortableWeb" as the short form.
+
+- A formal terminology entry for
+  "Portable Web Content Format (PortableWeb)"
+  has been added to Section 2 to establish the short-form usage.
+
+- The keyword list has been updated to include
+  "portable web content format" for improved discoverability.
+
+- Editorial clarifications throughout; no normative changes.
+
+# Acknowledgments
 {:numbered="false"}
 
 The PortableWeb container format draws on conventions established by EPUB 3
@@ -654,11 +681,3 @@ broader web platform standards ecosystem for the runtime model. The author
 thanks the IANA media types reviewer and the W3C Portable Web Content Format
 Community Group participants for their feedback on early drafts of this
 specification.
-
-# Changes from -00
-
-{:numbered="false"}
-
-The following changes were made from draft-selvaraj-portableweb-format-00:
-
-- Updated formal name throughout to Portable Web Content Format (PortableWeb).
