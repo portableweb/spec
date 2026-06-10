@@ -1,10 +1,15 @@
-# PortableWeb Specification
+# Portable Web Content Format (PortableWeb) — Specification
 
-This directory contains the official PortableWeb specifications.
+This directory contains the official specifications for the Portable Web Content
+Format (PortableWeb) — a file format for packaging interactive web content into
+a single self-contained, portable bundle.
 
 ## Current version: 0.1 (Draft)
 
 > ⚠️ **Pre-release.** Breaking changes may occur until v1.0.
+
+The specification is available as an IETF Internet Draft:
+[draft-selvaraj-portableweb-format-01](https://www.ietf.org/archive/id/draft-selvaraj-portableweb-format-01.html)
 
 ## Documents
 
@@ -16,6 +21,7 @@ This directory contains the official PortableWeb specifications.
 | `RUNTIME-PROFILE.md` | Planned | The frozen subset of HTML/CSS/JS allowed in each spec version. |
 | `STORAGE.md` | Planned | Storage isolation, quotas, export/import, snapshot bundles. |
 | `SIGNING.md` | Planned | Optional cryptographic signing of bundles. |
+| `COMMS.md` | Planned | Inter-bundle communication via local channels (e.g. `peers` permission). |
 
 ## Quick reference
 

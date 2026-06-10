@@ -5,7 +5,11 @@
 **Date:** 2026-05-24
 **Editor:** Omprakash Selvaraj
 **Canonical URL:** https://portableweb.org/spec/manifest/
-**IETF Internet-Draft:** [draft-selvaraj-portableweb-format-00](../ietf/draft-selvaraj-portableweb-format-00.md)
+**IETF Internet-Draft:** [draft-selvaraj-portableweb-format-01](https://www.ietf.org/archive/id/draft-selvaraj-portableweb-format-01.html)
+
+---
+
+*This document defines the manifest schema for the Portable Web Content Format (PortableWeb). For the container format, see `CONTAINER.md`.*
 
 ---
 
@@ -41,9 +45,10 @@ byte order mark. The top-level value **MUST** be an object.
 | `author` | object | An object with `name` (required), `email` (optional), and `url` (optional). |
 | `created` | string | The creation date in ISO 8601 format (e.g. `"2026-05-24T00:00:00Z"`). |
 | `icon` | string | Path within the bundle to a square icon (SVG or PNG recommended). Used by viewers in window titles and file listings. |
-| `permissions` | object | Declared capabilities (see §5). If omitted, all permissions default to off. |
+| `permissions` | object | Declared capabilities (see §5). If omitted, all permissions default to their specified default values. |
 | `rights` | object | Copyright and license information (see §6). |
-| `viewport` | object | Hints to the viewer for window sizing (see §7). |
+| `viewport` | object | Hints to the viewer for initial window sizing (see §7). |
+| `content_type` | string | A hint describing the nature of the content. Recommended values: `"game"`, `"presentation"`, `"book"`, `"simulation"`, `"tool"`, `"report"`, `"visualization"`, `"education"`. |
 
 ## 5. The `permissions` object
 
@@ -60,10 +65,12 @@ which permissions a bundle has declared when the bundle is first opened.
 | `clipboard_write` | boolean | `false` | Allow programmatic writes to the user clipboard. |
 | `notifications` | boolean | `false` | Allow showing OS-level notifications while the bundle is open. |
 | `fullscreen` | boolean | `true` | Allow the Fullscreen API. Default-on because of low risk. |
-| `storage` | string | `"isolated"` | Storage mode. Allowed values: `"none"`, `"isolated"`. `"isolated"` gives the bundle its own scoped `localStorage`/IndexedDB, separated from all other bundles. |
+| `storage` | string | `"isolated"` | Storage mode. Allowed values: `"none"` (no persistent storage), `"isolated"` (scoped `localStorage`/IndexedDB, isolated per bundle). |
+| `peers` | boolean | `false` | Allow inter-bundle communication via local channels. Defined in the companion COMMS specification. |
 
-Future versions may add more permissions. Bundles **MUST** ignore unknown
-permission keys when targeting their own spec version.
+Future versions of this specification may define additional permission keys.
+Viewers **MUST** ignore unknown permission keys when the bundle targets a spec
+version the viewer supports.
 
 ## 6. The `rights` object
 
@@ -108,6 +115,7 @@ based on the user's environment.
   "version": "1.2.0",
   "title": "Interactive Solar System",
   "description": "Explore planet orbits and relative scales of our solar system.",
+  "content_type": "simulation",
   "author": {
     "name": "Jane Doe",
     "email": "jane@example.com",
@@ -121,7 +129,8 @@ based on the user's environment.
     "camera": false,
     "microphone": false,
     "storage": "isolated",
-    "fullscreen": true
+    "fullscreen": true,
+    "peers": false
   },
   "rights": {
     "copyright": "© 2026 Jane Doe",
@@ -146,4 +155,6 @@ published at `https://portableweb.org/spec/manifest.schema.json`.
 
 ## 11. Changelog
 
-- **0.1** (2026-05-24) — Initial draft.
+- **0.1** (2026-05-24) — Initial draft. Added `content_type` recommended field
+  and `peers` permission; aligned with
+  [draft-selvaraj-portableweb-format-01](https://www.ietf.org/archive/id/draft-selvaraj-portableweb-format-01.html).
