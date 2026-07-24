@@ -11,7 +11,7 @@
 This repository holds the **specification**, **reference examples**, and the **IETF draft source**. For the project's story and the web app, visit **[portableweb.org](https://portableweb.org)**.
 
 [![Website](https://img.shields.io/badge/portableweb.org-0b0b15?style=flat-square&labelColor=0b0b15&color=7c3aed)](https://portableweb.org)
-[![Spec](https://img.shields.io/badge/spec-v0.1%20draft-9f67f5?style=flat-square)](spec/)
+[![Spec](https://img.shields.io/badge/spec-v0.2%20draft-9f67f5?style=flat-square)](spec/)
 [![IETF Internet-Draft](https://img.shields.io/badge/IETF-Internet--Draft-20d6d2?style=flat-square&labelColor=333)](https://datatracker.ietf.org/doc/draft-selvaraj-portableweb-format/)
 [![W3C Community Group](https://img.shields.io/badge/W3C-Community%20Group-005a9c?style=flat-square)](https://www.w3.org/community/portableweb/)
 [![Spec License](https://img.shields.io/badge/spec-CC--BY%204.0-444?style=flat-square)](https://creativecommons.org/licenses/by/4.0/)
@@ -27,7 +27,7 @@ A **PortableWeb bundle** (`.pweb`) packages the HTML, CSS, JavaScript, and media
 
 It behaves like a document: save it, copy it, email it, archive it. The format is **content-model agnostic** — a bundle can hold a game, a presentation, a simulation, a 3D experience, a scientific model, a report, or a book.
 
-> Looking for the **normative text**? It lives in [`ietf/`](ietf/) and is published as an IETF Internet-Draft: **[draft-selvaraj-portableweb-format](https://www.ietf.org/archive/id/draft-selvaraj-portableweb-format-01.html)**. This README is a map, not the spec itself.
+> Looking for the **normative text**? It lives in [`ietf/`](ietf/) and is published as an IETF Internet-Draft: **[draft-selvaraj-portableweb-format](https://datatracker.ietf.org/doc/draft-selvaraj-portableweb-format/)**. This README is a map, not the spec itself.
 
 ## The format at a glance
 
@@ -79,20 +79,22 @@ It behaves like a document: save it, copy it, email it, archive it. The format i
 
 | Document                          | Status    | Description                                                 |
 | --------------------------------- | --------- | ----------------------------------------------------------- |
-| [CONTAINER.md](spec/CONTAINER.md) | Draft 0.1 | The file format: ZIP layout, `mimetype`, required entries.  |
-| [MANIFEST.md](spec/MANIFEST.md)   | Draft 0.1 | The `manifest.json` schema: required and optional fields.   |
+| [CONTAINER.md](spec/CONTAINER.md) | Draft 0.2 | The file format: ZIP layout, `mimetype`, validation, package regions. |
+| [MANIFEST.md](spec/MANIFEST.md)   | Draft 0.2 | The `manifest.json` schema: fields, storage models, permissions. |
 | `SANDBOX.md`                      | Planned   | The runtime sandbox and permission-enforcement model.       |
 | `RUNTIME-PROFILE.md`              | Planned   | The frozen subset of HTML/CSS/JS allowed per spec version.  |
 | `STORAGE.md`                      | Planned   | Storage isolation, quotas, export/import, snapshot bundles. |
 | `SIGNING.md`                      | Planned   | Optional cryptographic signing of bundles.                  |
 | `COMMS.md`                        | Planned   | Inter-bundle communication over local channels (`peers`).   |
+| [DESIGN-NOTES.md](DESIGN-NOTES.md) | Notes | Non-normative decision log: storage stores, background ladder, instance identity, installed-lifecycle UX. Feeds the planned companion specs. |
 
 ## Status & roadmap
 
-> ⚠️ **Pre-release.** This is **v0.1 (draft)** — the container and manifest only. Breaking changes may occur until v1.0.
+> ⚠️ **Pre-release.** This is **v0.2 (draft)** — the container and manifest, with lifecycle, identity, storage-model, and validation rules. Breaking changes may occur until v1.0.
 
-- **v0.1** — Container and manifest _(this release)_
-- **v0.2** — Add `SANDBOX` and `RUNTIME-PROFILE`; first viewer reference implementation
+- **v0.1** — Container and manifest
+- **v0.2** — Lifecycle profiles (portable/installed), identity model, `userdata/` regions, storage declaration (`none`/`external`/`embedded`), required-vs-optional permissions, hardened container validation _(this release)_
+- **Next** — `SANDBOX`, `STORAGE`, and `RUNTIME-PROFILE` companion specs; viewer reference implementation catches up module by module
 - **v0.3 – v0.9** — Iterate on real-world usage; gather feedback from early adopters
 - **v1.0** — Stable spec. From v1.0 onward, every bundle stays renderable forever; new features ship in v1.x / v2.x without breaking v1.0 bundles.
 
