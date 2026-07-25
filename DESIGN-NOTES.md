@@ -238,7 +238,81 @@ clipboard paths are shims); network = enforcement layer, not a shim;
 fullscreen/pointer-lock/gamepad/audio/canvas/WASM/workers = engine
 passthrough; file import/export = standard pickers, viewer-mediated.
 
-## 9. Candidates (raised, not yet decided)
+## 9. Web viewer: isolation tiers and the wildcard-subdomain target (Decided direction)
+
+A web viewer is a sandbox built inside the browser's sandbox, where the
+only real isolation unit is the origin. Three viable designs, in
+increasing strength (2026-07-25):
+
+1. **Opaque-origin sandboxed iframe + postMessage storage broker** (the
+   originally parked architecture). `sandbox="allow-scripts"` gives
+   browser-enforced viewer↔bundle isolation, but opaque origins get no
+   persistent storage by design — localStorage/IDB are shimmed at
+   document-start over postMessage to a broker in the viewer origin
+   (namespaced by `event.source`, never payload-claimed identity;
+   preload-map + write-behind for sync localStorage). Resource serving
+   needs blob-map URL rewriting (SWs cannot control opaque-origin
+   iframes). Works everywhere; weakest ergonomics.
+
+2. **Dedicated sandbox origin + session service worker** (the current
+   portableweb-viewer.github.io + portableweb-sandbox.github.io
+   experiment). Viewer posts bundle bytes cross-origin; sandbox SW
+   serves `/bundle/<sessionId>/*` from per-session UUID-named IDB with
+   injected guards and CSP. Viewer↔bundle isolation is hard (true
+   cross-origin). **Bundle↔bundle isolation is soft** — all bundles
+   share one origin, so it rests on injected guards, which are shims,
+   and shims are never security (§8.5).
+
+3. **Wildcard subdomain per bundle — the target.**
+   `<hash>.sandbox.portableweb.org`, where `<hash>` is a digest of the
+   application region (deterministic → same bundle → same origin → its
+   storage persists across opens). Every bundle gets a real origin, so
+   the browser natively provides bundle↔bundle isolation, per-bundle
+   persistent storage (no shim at all), and per-bundle permission
+   prompts. This is the web-tier mirror of the -02 synthetic-origin
+   requirement (caveat: origin derives from bundle identity, not
+   viewer-assigned instance identity — copies share state on the web
+   tier; acceptable, disclosable degradation).
+
+**Wildcard mechanics (one-time setup, zero per-bundle administration):**
+one DNS record (`*.sandbox.portableweb.org` CNAME) matches every label
+at query time — nothing is ever registered per bundle; one stateless
+static host serves the same portal+SW shell for any `Host:` header
+(client JS reads `location.hostname`); the browser mints isolation by
+name comparison alone (origin = scheme/host/port tuple). The server
+never sees bundle content — bytes arrive via cross-origin postMessage
+and live only in each user's browser, per origin.
+
+**Three real to-dos:**
+- Wildcard TLS for `*.sandbox.portableweb.org` (free Let's Encrypt
+  DNS-01; Caddy automates). Cloudflare gotcha: free Universal SSL covers
+  only one level (`*.portableweb.org`), not `*.sandbox.…` — terminate
+  TLS yourself or pay for Advanced Certificate Manager.
+- **Public Suffix List submission for `sandbox.portableweb.org`**
+  (required, not optional): cookie scoping is laxer than origin scoping
+  — without PSL, a hostile bundle can set `Domain=sandbox.…` cookies
+  readable by every other bundle's subdomain. PSL entry makes each
+  subdomain its own site (why github.io is listed). Free PR, takes
+  weeks — submit early.
+- A host that answers any subdomain (GitHub Pages cannot; a small
+  Caddy/nginx box, Cloudflare Workers, or Cloud Run behind an LB with
+  the wildcard cert can). Workload ≈ three static files.
+
+**Limits no web design escapes** (all already handled by -02): storage
+durability is best-effort (`navigator.storage.persist()` is a request)
+→ `.pwebdata` export matters most on this tier; no embedded write-back
+(File System Access is Chromium-only and revocable) → embedded-model
+bundles run under the external fallback with export offered (-02 §7.6);
+no file association outside installed-PWA Chromium. The web viewer is a
+permanent partial-module viewer — Core + M-STORAGE with disclosed
+reduced durability — which the conformance model embraces by design.
+
+**Strategic note:** the zero-install web viewer is the answer to the
+viewer-distribution problem (§1) — the format's real existential risk.
+Design 2 stays the working experiment; design 3 is the destination that
+turns the web viewer from a demo into a conforming viewer.
+
+## 10. Candidates (raised, not yet decided)
 
 - Manifest `installable` hint so AI authors can declare app-intent and
   viewers can offer installation proactively (installation itself remains
