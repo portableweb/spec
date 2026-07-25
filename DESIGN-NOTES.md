@@ -198,7 +198,47 @@ functional.
 > your stuff with it; uninstalling a pweb app leaves you holding the
 > document you always had. No other platform can say that.
 
-## 8. Candidates (raised, not yet decided)
+## 8. Shim vs. custom API: the decision rules (Decided)
+
+Restating "standard interface, viewer-controlled implementation" as
+enforceable rules (2026-07-25):
+
+1. **If a standard web API exists, it MUST be the only bundle-facing
+   surface.** Passthrough vs. document-start shim is a per-platform
+   implementation detail that MUST be behaviorally indistinguishable to
+   the bundle, except for degradations disclosed via the runtime profile
+   (iOS camera fps is the canonical example). Denial always uses the
+   standard web error for that API — no novel error types.
+2. **No `pweb.store`.** A custom storage API was an early design and was
+   explicitly superseded: standard `localStorage`/IndexedDB backed by
+   the viewer store is what makes stock HTML and AI artifacts valid
+   bundles with zero porting.
+3. **`pweb.*` is reserved for capabilities with no web equivalent** —
+   today only `.pwebdata`/snapshot export triggering and runtime-profile
+   reading (`viewer_info`); later possibly peers/COMMS. Feature-
+   detectable; bundles MUST work when absent (Core-class injects
+   nothing).
+4. **Background work gets neither a shim nor a runtime API.** The web
+   equivalent (Service Workers) is permanently refused; background wants
+   are served declaratively (§5 ladder). If rung 3 ever ships, it is a
+   manifest-declared entry point the viewer invokes — not a
+   bundle-callable API.
+5. **Shims are compatibility, never security.** Enforcement lives below
+   the content layer (CSP + webRequest, partition isolation, permission
+   handlers). No security property may depend on a shim surviving.
+6. **Uniformity beats native convenience:** Electron/Android storage is
+   shimmed even though the engine could own it, so `.pwebdata` export
+   and the embedded `userdata/` round-trip behave identically on every
+   platform.
+
+Per-capability verdicts: storage = always shim; camera/mic/geo/
+notifications/clipboard = standard API, passthrough where the platform
+allows, shim where it forces (all three mobile-WebView notification and
+clipboard paths are shims); network = enforcement layer, not a shim;
+fullscreen/pointer-lock/gamepad/audio/canvas/WASM/workers = engine
+passthrough; file import/export = standard pickers, viewer-mediated.
+
+## 9. Candidates (raised, not yet decided)
 
 - Manifest `installable` hint so AI authors can declare app-intent and
   viewers can offer installation proactively (installation itself remains
