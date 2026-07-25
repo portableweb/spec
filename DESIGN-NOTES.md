@@ -45,6 +45,20 @@ distribution**. The zero-install web viewer is strategically load-bearing.
 
 ## 2. Adoption strategy (Decided direction)
 
+**Canonical positioning sentence** (2026-07-25; reuse verbatim on every
+public surface instead of improvising per-surface variants):
+
+> People create documents in Word, spreadsheets in Excel, presentations
+> in PowerPoint. Now anyone can create an application — by describing it
+> to an AI in plain language. Those older categories have had their file
+> formats for decades; applications created this way have none: nothing
+> platform-independent, portable, immediately runnable, shareable like a
+> document, and able to carry its user's data inside. PortableWeb
+> (`.pweb`) is that format.
+
+Short tagline variant: *Documents have `.docx`. Spreadsheets have
+`.xlsx`. AI-created apps have `.pweb`.*
+
 **For AI tools (the multiplier):**
 - `pweb pack` must accept a *single HTML file* and synthesize a manifest —
   AI artifacts are usually one self-contained HTML document; wrapping must

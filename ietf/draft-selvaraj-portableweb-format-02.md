@@ -117,14 +117,18 @@ inter-bundle communication are forthcoming.
 
 # Introduction
 
-The emergence of AI-assisted development tools has fundamentally changed the
-economics of creating interactive web content. Presentations, educational
-simulations, small games, data visualizations, and scientific models that
-previously required days of skilled development can now be generated in
-minutes. This has created a massive and growing category of interactive Web
-artifacts that need to be saved, shared, and used across devices and
-platforms, without a server for distribution and without being confined to
-a web browser.
+AI-assisted tools have changed who creates interactive web content.
+Applications — presentations, educational simulations, small games, data
+visualizations, personal tools, and scientific models — that previously
+required professional software development are now routinely created by
+people who are not developers, by describing the desired application in
+natural language. Interactive applications have thereby become a category
+of user-created document, comparable to word-processing documents,
+spreadsheets, and slide decks. Unlike those categories, however,
+interactive web applications have no native file format: no
+platform-independent, self-contained, immediately runnable unit that can
+be saved, shared, and kept — together with its user's data — independent
+of hosting infrastructure, accounts, and toolchains.
 
 Several existing technologies package or describe web content (see
 Section 3), and some — notably EPUB {{EPUB3}} and W3C MiniApp Packaging

@@ -23,6 +23,8 @@ This repository holds the **specification**, **reference examples**, and the **I
 
 ## What is PortableWeb?
 
+People create documents in Word, spreadsheets in Excel, presentations in PowerPoint. Now anyone can create an **application** — by describing it to an AI in plain language. Those older categories have had their file formats for decades; applications created this way have none: nothing platform-independent, portable, immediately runnable, shareable like a document, and able to carry its user's data inside. **PortableWeb is that format.**
+
 A **PortableWeb bundle** (`.pweb`) packages the HTML, CSS, JavaScript, and media of an interactive experience into **one file**. A compatible viewer opens it in its own sandboxed window — on desktop, mobile, or anywhere — entirely offline, with no deployment, no Web origin, and no browser required.
 
 It behaves like a document: save it, copy it, email it, archive it. The format is **content-model agnostic** — a bundle can hold a game, a presentation, a simulation, a 3D experience, a scientific model, a report, or a book.
