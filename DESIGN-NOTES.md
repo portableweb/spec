@@ -307,6 +307,29 @@ no file association outside installed-PWA Chromium. The web viewer is a
 permanent partial-module viewer — Core + M-STORAGE with disclosed
 reduced durability — which the conformance model embraces by design.
 
+**Offline constraint (2026-07-25):** with the viewer installed as a PWA,
+a *previously-opened* bundle opens offline reliably — its subdomain's SW
+intercepts navigation before DNS or network are consulted. A *brand-new*
+bundle cannot open offline on its subdomain: no DNS cache entry, no
+cached portal, and — fundamentally — no service worker, since SW
+registrations are origin-scoped with no wildcard and cannot be
+pre-installed for unvisited origins. Not fixable; design around it:
+
+- **Hybrid tiering:** online → per-bundle subdomain (tier 3), which also
+  primes that origin for future offline opens; offline + new bundle →
+  fall back to the shared sandbox origin (tier 2), whose SW is
+  pre-installed once at viewer-install time via the existing
+  `ensureSandboxSW` hidden-iframe pattern. Active tier disclosed via the
+  runtime profile.
+- **Storage must not split across tiers:** broker all web-tier storage
+  to the viewer origin's per-bundle store regardless of execution tier —
+  the §8.6 uniformity principle applied to the web. Subdomains then
+  provide execution and permission isolation only; `.pwebdata` export,
+  embedded-model round-trip, and tier switching stay uniform. (This
+  gives up design 3's "no storage shim" elegance but keeps its two
+  irreplaceable wins: browser-enforced execution isolation and
+  per-bundle permission prompts.)
+
 **Strategic note:** the zero-install web viewer is the answer to the
 viewer-distribution problem (§1) — the format's real existential risk.
 Design 2 stays the working experiment; design 3 is the destination that
