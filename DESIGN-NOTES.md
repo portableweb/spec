@@ -337,6 +337,74 @@ turns the web viewer from a demo into a conforming viewer.
 
 ## 10. Candidates (raised, not yet decided)
 
+- **TODO (v0.2): document-data allowlist for the embedded model.**
+  Mechanism for §3's two-store split. Under `storage.model: "embedded"`,
+  only keys the manifest lists are document data and enter `userdata/`;
+  everything else is operational data and stays external.
+
+  ```json
+  "storage": {
+    "model": "embedded",
+    "document": { "localStorage": ["notes", "issues.*"], "indexedDB": ["journal"] }
+  }
+  ```
+
+  Replaces the earlier `private` key-marker idea (a denylist): a key the
+  author forgets to list fails safe (not embedded, still persisted
+  externally) instead of silently leaking a token into a shared file —
+  consistent with default-deny. Open points for the spec text: pattern
+  grammar (current lean: exact name or trailing-`*` prefix only, no
+  globs); IndexedDB granularity (database vs. object store); whether an
+  embedded bundle with no allowlist is valid (lean: yes, embeds nothing,
+  viewer may say so on first open); ignore-vs-preserve for `userdata/`
+  keys no longer allowlisted (reference viewer: ignored, dropped on next
+  commit); fixture-pairing entries (grant path, unlisted key never in
+  file, malformed allowlist tolerated). Lands in MANIFEST.md §6 + the
+  companion STORAGE spec. `-02` is unpublished, so its storage section
+  (models table, hybrid-declarations paragraph) can be rewritten to match
+  rather than carrying compatibility shims. Reference implementation:
+  `viewer` `packages/electron/src/embedded-store.ts` (localStorage only
+  so far).
+
+  *One storage mode (implemented in the reference viewer 2026-10-24;
+  spec text not yet updated).* Drop `model`; the
+  allowlist alone decides. Every bundle has both stores; an empty or
+  absent list behaves like today's `external`, a non-empty list makes
+  the file self-updating. Keep `"storage": "none"` as a shorthand for
+  "persist nothing" (archival/kiosk). Reject a bare `"*"` (it would bring
+  the token leak back). The first-open disclosure ("this document saves
+  your entries inside itself") and the degradation rule then key off a
+  non-empty list. Because `-02` is unpublished, no deprecated `model`
+  mapping is needed.
+
+  *Note: binary data (photos, video, user-uploaded files).*
+  - `localStorage` is strings only; base64 works but costs ~33% and is
+    preloaded/rewritten whole. Not the path for media.
+  - The interface for binary is IndexedDB with `Blob`/`ArrayBuffer`
+    values. Prerequisite: the viewer IndexedDB shim (Electron currently
+    sets `indexedDB = undefined`). Allowlist granularity should reach
+    object stores (`"journal/photos"`) so content and cache can share a
+    database.
+  - Embedded layout: each blob is its own entry,
+    `userdata/blobs/<sha256>`, STORED (media is already compressed);
+    `userdata/store.json` references blobs by hash. Content-addressed
+    blobs are immutable, so most commits touch only `store.json`.
+  - External layout: blobs as individual files beside the store
+    document, never inlined into its JSON.
+  - Large-data write strategy: whole-file atomic rewrite does not scale
+    to GB-sized bundles. Promote append-with-compaction (new entries + a
+    new central directory appended, periodic compaction to a clean copy)
+    from MAY toward SHOULD above a size threshold; define crash-safety
+    for the append path.
+  - ZIP64: required for >4 GB archives or entries; CONTAINER.md must say
+    whether viewers MUST support it (reference writer currently refuses).
+  - Uploads: `<input type="file">` → `File` → IndexedDB is the standard
+    path; reading user-picked files is `M-FILE-IMPORT` and must be gated
+    by the manifest (Electron shows its picker independently of the
+    permission handler).
+  - Sharing: strip-on-share must show the user-data size; "send this
+    travel journal" can mean gigabytes.
+
 - Manifest `installable` hint so AI authors can declare app-intent and
   viewers can offer installation proactively (installation itself remains
   a user action per `-02` §4.2).
