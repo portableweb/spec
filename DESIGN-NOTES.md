@@ -405,6 +405,316 @@ turns the web viewer from a demo into a conforming viewer.
   - Sharing: strip-on-share must show the user-data size; "send this
     travel journal" can mean gigabytes.
 
+- **Network: optional site lists (`origins`) for `internet.read` /
+  `internet.write`.** MANIFEST.md §7 and `-02` reserve origin allowlists
+  for the runtime spec; the W3C CG draft (`internet.read` = "reads from
+  declared domains") and `CLAUDE.md` §5/§10 assume them. Proposal, in the
+  existing object form:
+
+  ```json
+  "permissions": {
+    "internet.read":  { "justification": "Loads issues", "origins": ["https://api.github.com", "https://*.githubusercontent.com"] },
+    "internet.write": { "justification": "Files issues", "origins": ["https://api.github.com"] }
+  }
+  ```
+
+  - **Optional.** Absent ⇒ any http(s) site (today's meaning). Required
+    lists would rule out legitimate "fetch the URL you type" bundles
+    (readers, API explorers). A list lets the viewer enforce *and*
+    disclose precisely ("Only: api.github.com") instead of "can access the
+    internet".
+  - **Grammar (CSP-like, so one list feeds both enforcement and CSP):**
+    `https://host`, `https://*.host` (subdomains only, not the apex),
+    explicit `:port`, scheme omitted ⇒ `https`. No paths, queries,
+    credentials or other wildcards; a bare `"*"` is rejected (omit the
+    list instead). `http` entries also match `https` on the same host
+    (CSP semantics); `ws:`/`wss:` match as `http:`/`https:`.
+  - **Bad entries fail closed:** invalid entries are dropped with a
+    diagnostic; if none remain, no site is allowed (the author meant to
+    restrict). The bundle still opens.
+  - **write ⊇ read** holds per site: a site in the write list is readable
+    even if absent from the read list; a write-without-list grant makes
+    reads unrestricted too.
+  - **Grants are scoped to the list.** The viewer stores what each grant
+    covered; if a bundle (same `id`, e.g. an update) later declares a
+    different list, the old grant is not in force and the user is asked
+    again ("You allowed this before, but it now asks for different
+    sites"). Prevents silent widening by updates.
+  - Unchanged by a list: remote scripts and frames stay blocked under any
+    grant (the bundle's code is the code in the file); CORS, mixed content
+    and cookies follow the web engine.
+
+  *Reference implementation (2026-10-25, experimental):* `viewer`
+  `packages/core/src/origins.ts` (grammar, matching), `network.ts`
+  (request check + CSP), `permissions.ts` (prompt text, scope re-ask);
+  Electron prompt, Pack window "Only these sites", Validate output.
+
+  Open points: (a) ~~ask `internet.write` per use or once on open~~ —
+  settled 2026-10-25: once on open (see the next entry); (b) ~~CORS
+  bypass~~ — decided 2026-10-25 (Oms): **sites in an explicit, granted
+  `origins` list are CORS-allowed** for that bundle, like a native app;
+  "any site" grants keep browser CORS, so a bundle can't use the viewer to
+  read servers that rely on CORS to stay unreadable (intranet,
+  localhost). Needed by real services that expect non-browser clients —
+  e.g. GitHub's OAuth device-flow endpoints send no CORS headers.
+  Reference: core `isCorsRelaxed` / `relaxedCorsHeaders`; Electron sets
+  `Access-Control-Allow-Origin: <bundle origin>` on those responses and
+  turns a non-2xx preflight into 204. A listed site also becomes readable
+  with the user's cookies for that site in the bundle's own partition
+  (not the user's browser cookies); (c) re-ask on any list change vs. only
+  on widening (implemented: any change — simpler, rare); (d) IP literals
+  and `localhost` in published bundles; (e) lands in MANIFEST.md §7 and
+  the I-D's permissions section, or the companion runtime spec as the
+  current text says.
+
+- **When permissions are asked: on open (current) vs. first use.**
+  *Direction (Oms, 2026-10-25):* once a `.pweb` is open it is on its own
+  — no viewer interface in between. So all permission questions happen
+  **before** the bundle runs, on open; the bundle's window is the
+  bundle's alone afterwards. Implemented that way in the reference
+  viewer (one prompt on first open; again only for newly declared
+  capabilities or a changed site list; changes via the viewer's menu).
+
+  *Candidate, not adopted — first-use prompting (Android/browser style).*
+  The viewer would hold the first request to a declared capability (the
+  first fetch to a listed site, the first `getUserMedia`) and prompt
+  then, once per capability, covering the whole declared site list.
+  Technically feasible: Electron's `onBeforeRequest` and permission
+  handlers can defer their answer, so the page's `fetch`/promise simply
+  waits; the CSP would carry the *declared* ceiling and the request hook
+  the user's decision. Parallel requests queue behind one prompt; a
+  caller's own timeout may fire while it is up. Android's
+  `shouldInterceptRequest` can block similarly; iOS cannot intercept
+  http(s) in WKWebView, so it would need JS wrappers for
+  fetch/XHR/WebSocket, with images/media blocked until granted. Pros:
+  in-context asks, bundles that never use a capability never prompt, one
+  model for internet/camera/location. Rejected for now because it puts
+  viewer UI on top of a running bundle.
+
+  Consequences of the on-open direction to keep in view:
+  - Camera, microphone, geolocation, Bluetooth are also decided on open
+    (grant ⇒ `getUserMedia` etc. resolve without a viewer prompt), not
+    when first used. Browsers and OSes normally prompt at use; the
+    disclosure on open has to carry the weight.
+  - After a deny, nothing in the window tells the user why something
+    fails (the bundle sees only standard failures). A viewer-drawn "off
+    for this bundle · Change" bar was proposed and is likewise not
+    adopted; the recovery path is the viewer's menu (Electron: Tools ▸
+    Permissions for This Bundle). Authoring guidance (AUTHORING.md)
+    should tell authors to handle network/capability failures with a
+    visible message.
+
+- **Viewer chrome: no menus on bundle windows; manage from Home.**
+  *Candidate (Oms, 2026-10-25) — may or may not be done.* Extends "once
+  open, a bundle is on its own": bundle windows carry no viewer menu (on
+  Windows/Linux Electron draws the app menu inside every window today);
+  everything bundle-related moves to the viewer's Home window.
+  - Home: Open…, Pack Folder…, a **"Your bundles"** list (title, file,
+    last opened) → Open · Permissions… · Export (app only / app + my
+    data / my data only) · Validate · Unpack · Clear Viewer Data · Show
+    in folder; **Manage a .pweb file…** for a file not seen yet; Clear
+    All Viewer Data set apart.
+  - Fits the storage model: grants and viewer data are per bundle, not
+    per window, so bundles can be managed without being open.
+  - Needs: a small index in the viewer store (title + last-known file per
+    bundle; the store keeps only ids today) — file-needing actions ask to
+    locate a moved file; on Windows a single-instance lock so launching
+    PortableWeb again brings Home forward (also stops a second viewer
+    launching per double-click).
+  - macOS still has the global menu bar (not on the window): keep
+    PortableWeb ▸ Quit, **Edit** (⌘C/⌘V/⌘Z only work through Edit-menu
+    items — removing it breaks copy/paste in bundles), Window ▸ Show
+    Home. DevTools/reload as shortcuts in development builds only.
+  - Trade-off: recovering from a denied permission now always goes
+    through Home (consistent with the on-open permission direction above).
+  - **Per-bundle variant (Oms, 2026-10-25):** instead of (or before)
+    changing the default, a bundle's manifest may ask a specific viewer
+    not to show its menus on that bundle's windows — a viewer-specific
+    custom field, ignored by every other viewer (unknown keys are
+    tolerated, B4). Shape to decide; lean: a namespaced extension object
+    keyed by the viewer's id so fields from different viewers can't
+    collide, e.g.
+    `"extensions": { "org.portableweb.viewer": { "menu": false } }`
+    (a prefixed top-level key such as `"x-portableweb-viewer"` is the
+    alternative). Always a *hint*: it can hide in-window menus, never the
+    platform essentials (macOS menu bar with Quit/Edit, a way back to
+    Home), and never affects permissions or sandboxing. Would live under
+    the general `extensions` field (next entry).
+
+- **One generic field for custom data: `extensions`.**
+  *Candidate (Oms, 2026-10-25).* A single top-level manifest field under
+  which every non-standard field goes, so organizations, tools and
+  viewers can add their own data without colliding with each other or
+  with future spec fields. Use cases: an organization classifying its
+  bundles (`internal` / `external`, department, retention), a viewer's
+  hints (the menu hint above), authoring tools recording what generated
+  the bundle, catalogs/archives adding their own metadata.
+
+  ```json
+  "extensions": {
+    "com.acme":               { "classification": "internal", "department": "finance" },
+    "org.portableweb.viewer": { "menu": false },
+    "ai.example.generator":   { "model": "…", "prompt_id": "…" }
+  }
+  ```
+
+  Proposed rules:
+  - Keys are **reverse-domain namespaces** of whoever defines the
+    contents (same form as `id`), so two parties never collide; values
+    are JSON objects whose contents the namespace owner defines.
+  - The spec defines the container only, never keys inside it; future
+    standard fields go at the top level, never in `extensions`. That is
+    the guarantee a reserved home gives and unknown-field tolerance alone
+    does not (a custom `menu` today could collide with a standard
+    `menu` tomorrow).
+  - Viewers **MUST** ignore namespaces they don't understand; tools
+    **MUST** preserve the whole object when repackaging (today:
+    MANIFEST.md §12 says SHOULD for both, `-02` says MUST ignore /
+    SHOULD preserve — reconcile to MUST).
+  - **Never security-relevant.** Nothing in `extensions` can grant a
+    permission, relax the sandbox, or be trusted as a statement of fact:
+    anyone can edit a manifest. An org's `"classification": "internal"`
+    is a label, not an access control — until signing (planned ~v0.3)
+    can attest who wrote it, and even then the policy is the org's, not
+    the format's.
+  - The published JSON Schema must allow `extensions` with arbitrary
+    namespaced objects (and keep top-level tolerance for unknown fields,
+    or deliberately tighten it — decide together).
+  - Validate/Pack may *show* extensions (e.g. "com.acme:
+    classification = internal") but never fail on them; a namespace
+    that isn't reverse-domain form gets a warning.
+
+  Open: field name (`extensions` vs `x` vs `meta`); whether to keep
+  tolerating stray top-level unknown fields once `extensions` exists
+  (lean: keep tolerating — never break old bundles — but recommend
+  `extensions` for anything new); size guidance; whether well-known
+  namespaces (e.g. a shared classification vocabulary) are ever
+  registered somewhere.
+
+- **Removing and restoring document data: both a stripped copy and an
+  in-place wipe, always with a backup; plus `.pwebdata` import.**
+  *Candidate (Oms, 2026-10-25) — settles the open question "does 'remove
+  my content' mean a fresh stripped export or an in-place wipe?" as
+  "both"; not built yet.*
+  - **Stripped copy** (exists): File ▸ Export App Only — original untouched;
+    for sharing a fresh copy (§4).
+  - **In-place wipe**: Tools ▸ *Remove My Data from This File…* —
+    confirmation lists what goes (the allowlisted keys, their size); the
+    viewer **first saves the current document data as a `.pwebdata`**
+    beside the file (automatic backup), then rewrites the file with an
+    empty `userdata/` region (same atomic write path) and reloads the
+    bundle's windows. Why guarded: for document-like bundles the data *is*
+    the document, the rewrite has no undo, and a running bundle may not
+    expect its data to vanish (reload avoids that).
+  - **Import** (§4's opposite direction): File ▸ *Import My Data
+    (.pwebdata)…* into the open bundle —
+    1. validate the `.pwebdata`;
+    2. `bundle_id` mismatch ⇒ warn, Cancel default ("This data is from
+       *X*; you're importing into *Y*");
+    3. only keys matching this bundle's `storage.document` list are
+       imported; others are listed and skipped (an import can never put
+       operational data — tokens — into the file);
+    4. **replace** the current document data, after saving it as a
+       `.pwebdata` backup (so a wrong import is undoable);
+    5. atomic write + reload;
+    6. read-only file ⇒ say so and offer Export App + My Data to a new
+       `.pweb` instead of failing silently.
+  - Together: *start over* = Remove (auto-backup); *undo* = Import the
+    backup; *move my data into a fresh or newer copy of the app* = open the
+    new `.pweb`, Import from the old one's export.
+  - Open: merge vs. replace on import (lean: replace only — merge
+    semantics are app-specific); backup naming/location (lean: beside the
+    file, `<name> (data backup <date>).pwebdata`, falling back to a save
+    dialog if that folder isn't writable); IndexedDB/blobs once document
+    data can include them (same flows, larger backups); whether the
+    viewer-only store gets an equivalent import (lean: no — operational
+    data is re-obtainable by design).
+
+- **Frameless, transparent windows (desktop).** *Candidate (Oms,
+  2026-10-25) — not built.* Lets content float on the desktop with no
+  window chrome — photo books, albums, desk widgets (Oms built a similar
+  floating coffee-cup timer before). Fits "once open, the bundle is on its
+  own."
+  - Manifest: window hints beside the existing ones (MANIFEST.md §9), e.g.
+    `"viewport": { "preferred_width": 900, "preferred_height": 700,
+    "frame": false, "transparent": true }`. Hints: a viewer that can't do
+    it ignores them and opens a normal window.
+  - Authoring: page background must be transparent (`html, body
+    { background: transparent }`); draggable regions via
+    `-webkit-app-region: drag`; the bundle should draw its own close/hide
+    control. Platform close keys still work (⌘W/⌘Q, Alt+F4).
+  - Electron: `frame: false`, `transparent: true`, transparent
+    `backgroundColor`. Limits: clicks on see-through pixels still hit the
+    window rectangle (click-through needs `setIgnoreMouseEvents` with
+    forwarding); Windows can't edge-resize transparent windows (prefer a
+    fixed size); Linux needs a compositor or shows black.
+  - **Safety:** frameless + transparent can imitate system UI (fake login
+    or alert). Treat it like a permission — "*Album* wants to appear
+    without a window frame" in the on-open prompt; declined ⇒ normal
+    window. Never always-on-top, never covering the whole screen.
+  - Desktop only; on phones content is full-screen anyway (next entry).
+
+- **Viewport hints on phones and tablets.** *Open — spec silent.*
+  MANIFEST.md §9 calls the sizes window hints that viewers "may respect or
+  override"; nothing defines what a mobile viewer does with them (and the
+  Android/iOS shells don't have their WebView glue yet). There is no
+  window on a phone: the bundle gets the screen. Proposed rules:
+  - `preferred_width` / `preferred_height`: ignored on phones (the screen
+    is the size). Tablets in a windowed/split mode: same as desktop.
+  - `min_width` / `min_height` become the **layout floor**: if the screen
+    is narrower than `min_width`, lay the page out at `min_width` CSS px
+    and scale it down to fit (what `<meta name="viewport"
+    content="width=…">` does on the web), rather than cropping or
+    scrolling sideways; optionally tell the user "designed for a larger
+    screen". No `min_width` ⇒ the bundle's own `<meta name="viewport">` and
+    responsive CSS decide, exactly as on the web.
+  - `resizable`: meaningless on phones; ignored.
+  - A new optional **`orientation`** hint (`any` | `portrait` |
+    `landscape`, as in the Web App Manifest) — a 1200 × 800 album could
+    ask for landscape; viewers may lock or just suggest rotating.
+  - Authoring guidance (AUTHORING.md): set `min_width` only when the
+    layout truly can't go narrower — a desktop-sized `min_width` turns a
+    responsive bundle into a shrunken one on phones (the GitHub Issues
+    demo's `min_width: 900` would be scaled to ~40 % on a phone although
+    its CSS stacks below 980 px; drop `min_width` or lower it for mobile).
+
+- **`AUTHORING.md` — where it lives and what goes in it.** *Decided
+  direction (Oms, 2026-10-25): a note for now; not drafted yet.*
+  - **Home:** a new file in this repo (`portableweb/spec`), beside
+    CONTAINER.md / MANIFEST.md. **Informative**, not normative. Not part of
+    the IETF draft (which may reference it) or the W3C CG draft; the CG
+    may later publish it as a non-normative note / authoring guide.
+  - **Why it exists:** every other spec file says what a *viewer* does
+    when a bundle opens; nothing says what whoever *creates or edits* a
+    bundle should do — a developer, a packer, and above all an AI
+    (`portableweb-storage-authoring-context.md` §4).
+  - **Readers:** AI tools, via an `llms.txt` on portableweb.org pointing
+    at it (§2); our tooling — Validate / Pack warnings, the CLI lint, the
+    planned `@portableweb/mcp` server — implements its checks; people
+    writing bundles by hand.
+  - **Collected so far:**
+    - keep `id` and `userdata/` when an AI regenerates/edits a bundle vs.
+      new `id` for a new bundle (storage-authoring context §2);
+    - the "living summary" convention (same doc §3);
+    - storage: list document keys in `storage.document` (prefix like
+      `doc.*`), never list tokens/credentials; authors declare keys — the
+      viewer never detects them;
+    - permissions: declare only what's used; prefer `origins` site lists;
+      always give a `justification`; capability-declaration lint (same doc
+      §5);
+    - no CDNs — bundle libraries and fonts locally (they fail silently in
+      the sandbox);
+    - handle network/capability failures with a visible message (after a
+      deny nothing else tells the user — on-open permission entry above);
+    - viewport: set `min_width` only when the layout truly can't go
+      narrower (phone entry above);
+    - frameless windows: transparent background, `-webkit-app-region:
+      drag`, own close control (frameless entry above);
+    - schema-legible document vs. opaque program storage (open; same doc
+      §7);
+    - custom data goes under `extensions` with a reverse-domain namespace
+      (extensions entry above).
+
 - Manifest `installable` hint so AI authors can declare app-intent and
   viewers can offer installation proactively (installation itself remains
   a user action per `-02` §4.2).
