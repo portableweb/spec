@@ -363,8 +363,8 @@ turns the web viewer from a demo into a conforming viewer.
   companion STORAGE spec. `-02` is unpublished, so its storage section
   (models table, hybrid-declarations paragraph) can be rewritten to match
   rather than carrying compatibility shims. Reference implementation:
-  `viewer` `packages/electron/src/embedded-store.ts` (localStorage only
-  so far).
+  `viewer` `packages/electron/src/embedded-store.ts` (localStorage and
+  IndexedDB).
 
   *One storage mode (implemented in the reference viewer 2026-10-24;
   spec text not yet updated).* Drop `model`; the
@@ -381,8 +381,7 @@ turns the web viewer from a demo into a conforming viewer.
   - `localStorage` is strings only; base64 works but costs ~33% and is
     preloaded/rewritten whole. Not the path for media.
   - The interface for binary is IndexedDB with `Blob`/`ArrayBuffer`
-    values. Prerequisite: the viewer IndexedDB shim (Electron currently
-    sets `indexedDB = undefined`). Allowlist granularity should reach
+    values (built — see below). Allowlist granularity should reach
     object stores (`"journal/photos"`) so content and cache can share a
     database.
   - Embedded layout: each blob is its own entry,
@@ -404,6 +403,32 @@ turns the web viewer from a demo into a conforming viewer.
     permission handler).
   - Sharing: strip-on-share must show the user-data size; "send this
     travel journal" can mean gigabytes.
+
+  *IndexedDB + blobs (implemented in the reference viewer 2026-10-25;
+  spec text not yet written).* Decided by building it:
+  - Granularity is the object store: `"indexedDB": ["journal/entries",
+    "journal/*"]`. The database name must be literal (`"*"`, `"*/*"` and
+    wildcard databases are rejected — the same token leak as a bare
+    `"*"`), so content and caches can share a database.
+  - No IndexedDB reimplementation: the bundle uses the platform's real
+    IndexedDB (isolated per bundle); the viewer *observes* committed
+    transactions on listed stores and *restores* them from the file before
+    the bundle's `open` succeeds. The file is the source of truth for
+    listed stores; schema (keyPath, autoIncrement, indexes) travels with
+    the records and is recreated on a new machine.
+  - Values are stored as tagged JSON (`{"$t": "date" | "blob" | "bytes" |
+    "map" | "set" | …}`); Blobs become `{"$t": "blob", "sha256", "type",
+    "size"}` with the bytes in `userdata/blobs/<sha256>` (the viewer
+    re-hashes what the page sends; unreferenced blobs are dropped on
+    commit). `.pwebdata` carries blobs as base64 under `blobs`.
+  - Open: a transaction spanning listed and unlisted stores is split (only
+    the listed part persists in the file) — spec should say whether that's
+    acceptable or a validation warning; read-only files restore but keep no
+    changes (localStorage falls back to viewer storage; IndexedDB doesn't
+    yet); `<input type="file">` is not gated in the reference viewer —
+    decide whether `M-FILE-IMPORT` needs a declaration or is always
+    allowed (it is user-initiated, like a drop).
+  - Demo: `portableweb-demos/photo-journal` (camera + microphone + blobs).
 
 - **Network: optional site lists (`origins`) for `internet.read` /
   `internet.write`.** MANIFEST.md §7 and `-02` reserve origin allowlists
@@ -677,6 +702,28 @@ turns the web viewer from a demo into a conforming viewer.
     responsive bundle into a shrunken one on phones (the GitHub Issues
     demo's `min_width: 900` would be scaled to ~40 % on a phone although
     its CSS stacks below 980 px; drop `min_width` or lower it for mobile).
+
+- **Files the viewer can't write back to.** *Candidate (2026-10-26).*
+  There is no "read-only .pweb" in the format; this is about the file on
+  disk: locked in Finder, read-only permissions, a write-protected USB
+  stick, a mounted `.dmg`, a read-only network share. A bundle with a
+  document-data list (`storage.document`) can't save into such a file.
+  Reference viewer today: localStorage document keys fall back to viewer
+  storage for the session (the degradation rule); IndexedDB stores are
+  restored from the file but changes are not kept — the file stays the
+  source of truth, so the next open shows the file's state again. Options:
+  - (a) Same fallback for IndexedDB: keep listed stores in viewer storage
+    while the file is unwritable, and stop restoring them from the file
+    until it becomes writable (then: which wins — the file or the viewer
+    copy?).
+  - (b) Say so on open, together with the permission prompt (fits "once
+    open, nothing in between"): "This file can't be saved to — changes
+    won't be kept in it. [Save a Copy…] [Open Anyway]". Save a Copy writes
+    a writable copy and opens that.
+  - Possibly both: (b) as the honest default, (a) so "Open Anyway" doesn't
+    silently lose work.
+  - Spec text: whether viewers MUST tell the user when document data
+    can't be saved, and whether the degradation rule covers IndexedDB.
 
 - **`AUTHORING.md` — where it lives and what goes in it.** *Decided
   direction (Oms, 2026-10-25): a note for now; not drafted yet.*
