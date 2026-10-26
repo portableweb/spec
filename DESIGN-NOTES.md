@@ -725,6 +725,42 @@ turns the web viewer from a demo into a conforming viewer.
   - Spec text: whether viewers MUST tell the user when document data
     can't be saved, and whether the degradation rule covers IndexedDB.
 
+- **Nearby communication (`nearby`) — offline, device to device.**
+  *Experimental; prototype in the reference viewer 2026-10-26; spec text
+  not written.* Copies of a bundle on nearby computers find each other and
+  exchange messages with no internet, router or server (Bluetooth LE first;
+  other links later behind the same API). No web standard covers this
+  (Web Bluetooth is central-only and device-oriented), so it is a custom,
+  optional, permission-controlled API: `navigator.portableweb.nearby`
+  (`host` / `discover` / `connect`; session events `peerrequest`,
+  `peerconnected`, `peerdisconnected`, `message`; JSON messages ≤ 60 KB).
+  Present only when granted — its presence is the feature check.
+  Decided while building it:
+  - **Host-based star** first: one host, joiners connect to it; the host
+    relays at application level. Not Bluetooth Mesh. `maxPeers` is a
+    request; the viewer caps it (7 now) and reports what it allows.
+  - **BLE roles are internal**: the API never mentions central/peripheral;
+    a transport contract (`NearbyTransport`: advertise, scan, connect,
+    send chunks) hides them. The wire format (chunk header, bounded
+    reassembly) is shared so all viewers interoperate.
+  - **Consent**: "Connect with nearby devices" is asked on open like every
+    capability. Each join then shows a 4-digit code on both screens,
+    derived by the viewer from the connection's key exchange (ECDH P-256 →
+    HKDF; AES-256-GCM per direction, replay-protected); the host accepts in
+    the bundle's own UI. A bundle can't fake the code; nothing moves before
+    the host accepts. No viewer dialog appears mid-use.
+  - **Scope**: same bundle only — the advertised service UUID is derived
+    from the bundle id (+ an optional service label), so the id itself is
+    never broadcast. Peers get random per-session ids, never hardware
+    addresses.
+  - Open: cross-bundle sessions by declared service name (a teacher's
+    deck ↔ students' quiz) and how the prompt discloses them; 3–5+ device
+    limits per platform (to be measured); binary messages; reconnect;
+    whether the code should be viewer-drawn instead of bundle-drawn; the
+    manifest key name (`nearby` today); conformance class (an optional
+    module, e.g. `M-NEARBY`).
+  - Demo: `portableweb-demos/tic-tac-toe`.
+
 - **`AUTHORING.md` — where it lives and what goes in it.** *Decided
   direction (Oms, 2026-10-25): a note for now; not drafted yet.*
   - **Home:** a new file in this repo (`portableweb/spec`), beside
