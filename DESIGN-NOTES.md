@@ -546,27 +546,34 @@ turns the web viewer from a demo into a conforming viewer.
     locate a moved file; on Windows a single-instance lock so launching
     PortableWeb again brings Home forward (also stops a second viewer
     launching per double-click).
-  - Home layout (Oms, 2026-10-26; built in Electron the same day): three
-    sections, each action with a line icon (inline SVG, no CDN).
-    1. **Your .pweb files:** Open a .pweb file (the main action);
-       Permissions; Clear your content from a file — removes only what
-       the user created or saved in the bundle (`userdata/`), never the
-       published app. It changes the file and can't be undone, so it
-       confirms and offers to save a copy first; refused while the file
-       is open, when it has no saved content, or when it's read-only.
-    2. **For advanced users** — people creating .pweb content themselves
-       or with AI tools: Pack, Unpack, Validate.
-    3. **PortableWeb viewer** (viewer-specific, at the bottom like
-       settings): Clear data for a bundle — the viewer store for one
-       bundle (sign-ins, caches, settings, unlisted keys, permission
-       answers); never travels with the file; the bundle is asked for
-       permissions again on next open. Reset the viewer — the same for
-       every bundle; .pweb files are never changed.
+  - Home layout (Oms, 2026-10-26; built in Electron the same day, after
+    a first three-section version): system font, inline SVG line icons and
+    the app mark (nothing fetched), light and dark.
+    1. **Open:** drop zone (drop a .pweb anywhere on the window) with
+       *Choose file…* (⌘O / Ctrl+O) and *Permissions…* beside it.
+    2. **Your data** — two cards that teach the storage model side by
+       side: *Saved inside a file* ("what you created or saved travels
+       with the .pweb; clearing it returns the file to exactly how it was
+       published") → *Clear content from a file…* — removes only
+       `userdata/`, never the published app; confirms and offers to save
+       a copy first; refused while the file is open, when it has no saved
+       content, or when it's read-only. *Kept by this viewer* (sign-ins,
+       caches, settings, permission answers; stays on this computer) →
+       *Clear for one bundle…* (asked for permissions again on next open)
+       and *Reset viewer…* (every bundle; .pweb files never changed).
+    3. **For advanced users** — people creating .pweb content themselves
+       or with AI tools: Pack (`folder → .pweb`), Unpack, Validate.
+    4. Footer: *Read the spec* (system browser) · "Everything stays on
+       this computer."
+    Not taken from the mock-up yet: a sidebar with Permissions / Stored
+    data pages (needs the bundle index), a hidden-inset title bar, the
+    Geist web font (would have to ship inside the app — offline).
     Until the "Your bundles" list exists, per-bundle actions ask for a
     .pweb first.
   - Deferred for the list: a **Recent** list on Home (each row: icon or
-    thumbnail, title, version, last opened, ⋯ menu with the per-bundle
-    actions) replaces the pick-a-file step; row icon comes from the
+    thumbnail, title, path · size, a capability badge worked out from the
+    manifest — *Offline only* / *Uses internet* — last opened, ⋯ menu with
+    the per-bundle actions) replaces the pick-a-file step; row icon comes from the
     manifest `icon`, or a manifest `thumbnail` once that exists (open
     question in the project context).
   - macOS still has the global menu bar (not on the window): keep
