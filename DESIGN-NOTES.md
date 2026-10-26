@@ -546,6 +546,29 @@ turns the web viewer from a demo into a conforming viewer.
     locate a moved file; on Windows a single-instance lock so launching
     PortableWeb again brings Home forward (also stops a second viewer
     launching per double-click).
+  - Home layout (Oms, 2026-10-26; built in Electron the same day): three
+    sections, each action with a line icon (inline SVG, no CDN).
+    1. **Your .pweb files:** Open a .pweb file (the main action);
+       Permissions; Clear your content from a file — removes only what
+       the user created or saved in the bundle (`userdata/`), never the
+       published app. It changes the file and can't be undone, so it
+       confirms and offers to save a copy first; refused while the file
+       is open, when it has no saved content, or when it's read-only.
+    2. **For advanced users** — people creating .pweb content themselves
+       or with AI tools: Pack, Unpack, Validate.
+    3. **PortableWeb viewer** (viewer-specific, at the bottom like
+       settings): Clear data for a bundle — the viewer store for one
+       bundle (sign-ins, caches, settings, unlisted keys, permission
+       answers); never travels with the file; the bundle is asked for
+       permissions again on next open. Reset the viewer — the same for
+       every bundle; .pweb files are never changed.
+    Until the "Your bundles" list exists, per-bundle actions ask for a
+    .pweb first.
+  - Deferred for the list: a **Recent** list on Home (each row: icon or
+    thumbnail, title, version, last opened, ⋯ menu with the per-bundle
+    actions) replaces the pick-a-file step; row icon comes from the
+    manifest `icon`, or a manifest `thumbnail` once that exists (open
+    question in the project context).
   - macOS still has the global menu bar (not on the window): keep
     PortableWeb ▸ Quit, **Edit** (⌘C/⌘V/⌘Z only work through Edit-menu
     items — removing it breaks copy/paste in bundles), Window ▸ Show
@@ -654,6 +677,55 @@ turns the web viewer from a demo into a conforming viewer.
     data can include them (same flows, larger backups); whether the
     viewer-only store gets an equivalent import (lean: no — operational
     data is re-obtainable by design).
+  - Built first on Home (Electron, 2026-10-26) as *Clear your content
+    from a file* (core `clearDocumentContent`): refused while the file is
+    open in a window (instead of reloading it); read-only file ⇒ says so;
+    the backup is offered, not automatic — *Save a Copy First…* writes a
+    full `.pweb` copy (keeps IndexedDB blobs too, which a `.pwebdata`
+    backup can't yet). Automatic `.pwebdata` backup is still the target.
+
+- **Bundle detection: is this the bundle the viewer already knows?**
+  *Candidate (Oms, 2026-10-26) — design note only, not decided.* The
+  viewer keys everything it keeps (viewer store, grants, "don't ask again"
+  sites) by manifest `id`. That breaks when a different file arrives with
+  an `id` the viewer has seen:
+  - two unrelated bundles share an `id` (AI tools and templates reuse
+    `com.example.app`; a fork keeps its parent's `id`);
+  - a hostile bundle copies a known `id` to inherit another bundle's
+    sign-in tokens and permission answers — the serious case;
+  - a copy of the same bundle (sent to a friend, duplicated to try
+    something) should not share sign-ins or answers with the original
+    (§6);
+  - a new *version* of the same bundle should keep them.
+  **Proposal (Oms):** the first time the viewer opens a bundle it writes
+  a viewer-generated unique id into a custom manifest field (e.g.
+  `"extensions": { "org.portableweb.viewer": { "instance": "<uuid>" } }`);
+  later opens compare it to tell new from existing.
+  Points to weigh before deciding:
+  - §6 already looked at an instance marker written into the file and
+    rejected it: every copy carries the same marker, so copies still look
+    like the original (the bug it should fix), and a hostile bundle can
+    copy the marker as easily as the `id`.
+  - `manifest.json` is in the application region, which the viewer
+    promises never to change (byte-for-byte copy, CONTAINER.md §7);
+    editing it changes the app's content hash and would break signing
+    (v0.3/v0.4) and archival checks. A marker would at least have to live
+    in `userdata/`, and read-only files couldn't get one at all.
+  - What §6 relies on instead, without touching the file: a durable OS
+    file reference (bookmark / file ID) plus a **hash of the application
+    region** next to the `id`. Same `id` + different hash = a different
+    app or a new version → treat as new and ask (*"This says it's Field
+    Journal, but it isn't the copy you used before. Use its own data, or
+    reconnect yours?"*); same hash + different file reference = a copy →
+    new instance (§6 step 2).
+  - Telling a new version from an impostor needs something the impostor
+    can't copy: signing (planned v0.3/v0.4). Until then, same `id` with a
+    different hash should never inherit tokens silently.
+  - Home "Your bundles" list (above) would show these per instance, not
+    per `id`.
+  - Open: whether any marker in `userdata/` is still useful as a hint
+    (e.g. to link a moved file back faster) when the hash and OS reference
+    are the real checks.
 
 - **Frameless, transparent windows (desktop).** *Candidate (Oms,
   2026-10-25) — not built.* Lets content float on the desktop with no
