@@ -840,6 +840,52 @@ turns the web viewer from a demo into a conforming viewer.
     module, e.g. `M-NEARBY`).
   - Demo: `portableweb-demos/tic-tac-toe`.
 
+- **Communication between bundles on the same device.** *Candidate
+  (Oms, 2026-10-28); nothing built, no spec text.* Two different bundles
+  open on one device pass data to each other, e.g. a teacher's deck
+  driving a quiz, a tracker handing its entries to a charting tool, or a
+  form bundle filling a document bundle.
+  - **Today it isn't possible, by design.** Each bundle has its own
+    origin and storage partition, and every same-device web channel
+    (`BroadcastChannel`, `storage` events, `SharedWorker`, shared
+    IndexedDB) is same-origin only. `window.open` is denied, so there's
+    no window reference to `postMessage` to.
+  - **Side effect to fix first:** the reference viewer keys origin and
+    partition by `id` (`pweb://<id>/`, `persist:bundle-<id>`), so copies
+    of one bundle, and any bundle that claims the same `id`, already
+    share storage and `BroadcastChannel`. That is a leak, not a feature,
+    and it goes away with per-copy keying (§6). Inter-bundle messaging
+    must be an explicit, granted channel, never shared origin.
+  - **Options:**
+    1. *User-carried transfer, no new API:* copy/paste, drag-and-drop,
+       save a file in one and open it in the other. Already standard,
+       consent is the user's own action each time. Probably enough for
+       one-off hand-offs; doesn't cover live sessions.
+    2. *Viewer-brokered channels:* the manifest declares named services
+       it offers or wants (reverse-domain names, e.g.
+       `"channels": { "offers": ["org.example.quiz.v1"], "uses": [...] }`);
+       the viewer connects matching open bundles with a `MessagePort`
+       after the user approves the pairing. Custom API under §8 rule 3
+       (no web equivalent), present only when granted.
+    3. *Reuse `nearby` with a local transport:* same API and session
+       model as Nearby, with "on this device" as one more link. Nearby
+       already lists cross-bundle sessions by declared service name as
+       open, so one design could answer both questions. Current lean.
+  - **Identity:** `id` is author-chosen and copyable, so the viewer can't
+    trust "this is org.example.quiz" until signing exists. Pairing
+    consent should show both bundles' titles/icons and be asked per
+    pair, not granted by matching id or service name alone.
+  - **Constraints:** default-deny; asked on open like other capabilities;
+    both bundles must be open (inert-when-closed, §5), so no waking a
+    closed bundle and no background delivery; messages are structured
+    data only (no shared storage, no handles to the other bundle's
+    window/DOM).
+  - Open: manifest key name; whether a channel can cross viewer tiers;
+    one-to-one vs. one-to-many; binary/size limits; what a viewer that
+    runs each bundle in a separate process (or a web viewer with
+    per-bundle subdomains, §9) needs to broker it; conformance class
+    (optional module alongside `M-NEARBY`).
+
 - **`AUTHORING.md` — where it lives and what goes in it.** *Decided
   direction (Oms, 2026-10-25): a note for now; not drafted yet.*
   - **Home:** a new file in this repo (`portableweb/spec`), beside
