@@ -88,7 +88,7 @@ It behaves like a document: save it, copy it, email it, archive it. The format i
 | `STORAGE.md`                      | Planned   | Storage isolation, quotas, export/import, snapshot bundles. |
 | `SIGNING.md`                      | Planned   | Optional cryptographic signing of bundles.                  |
 | `COMMS.md`                        | Planned   | Inter-bundle communication over local channels (`peers`).   |
-| [DESIGN-NOTES.md](DESIGN-NOTES.md) | Notes | Non-normative decision log: storage stores, background ladder, instance identity, installed-lifecycle UX. Feeds the planned companion specs. |
+| [DESIGN-NOTES.md](https://github.com/portableweb/viewer/blob/main/DESIGN-NOTES.md) (viewer repo) | Notes | Non-normative decision log: storage stores, background ladder, instance identity, installed-lifecycle UX. Feeds the planned companion specs. |
 
 ## Status & roadmap
 
